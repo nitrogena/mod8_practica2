@@ -9,13 +9,15 @@
 import UIKit
 
 class CustomLabel: UILabel {
-
-    /*
-    // Only override drawRect: if you perform custom drawing.
-    // An empty implementation adversely affects performance during animation.
+    var size:CGFloat?
+    
     override func drawRect(rect: CGRect) {
-        // Drawing code
+        self.font = UIFont(name: "Champagne&Limousines-Bold", size: Constantes.FUENTE_TITULOS)
+        self.layer.backgroundColor = Constantes.COLOR_ETIQUETAS.CGColor
+        self.layer.cornerRadius = rect.size.height / 3
+        self.textColor = Constantes.COLOR_TEXTOS
+        // invocamos el metodo de la super clase al final, para que cuando dibuje la etiqueta ya tenga todas las configuraciones
+        super.drawRect(rect)
+        
     }
-    */
-
 }

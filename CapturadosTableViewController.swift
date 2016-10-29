@@ -11,6 +11,7 @@ import UIKit
 class CapturadosTableViewController: FugitivosTableViewController {
 
     override func viewDidLoad() {
+        self.estaCapturado = 1
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.

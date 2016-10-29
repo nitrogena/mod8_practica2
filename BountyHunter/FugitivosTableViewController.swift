@@ -9,63 +9,77 @@
 import UIKit
 
 class FugitivosTableViewController: UITableViewController {
-
+    // Esta propiedad determina si los registros se van a presentar si estan capturados
+    var estaCapturado = 0
+    var losFugados:NSArray?
+    @IBAction func btnNuevoTouch(sender: AnyObject) {
+        self.performSegueWithIdentifier("nuevo", sender: self)
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        // Es necesario inicializar el array, porque no puede ser nil
+        self.losFugados = NSArray()
     }
-
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        self.cargarTabla()
+    }
+    func cargarTabla() {
+        self.losFugados = DBManager.instance.encuentraTodosLos("Fugitive", filtradosPor:
+            NSPredicate(format: "captured=%d", self.estaCapturado))
+        self.tableView.reloadData()
+    }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
-
     // MARK: - Table view data source
-
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
-        return 0
+        return 1
     }
-
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
-        return 0
+        return self.losFugados!.count
     }
-
-    /*
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("reuseIdentifier", forIndexPath: indexPath)
-
-        // Configure the cell...
-
+        let cell = tableView.dequeueReusableCellWithIdentifier("reuseID", forIndexPath: indexPath)
+        
+        let elFugitivo = self.losFugados![indexPath.row] as! Fugitive
+        cell.textLabel!.text = elFugitivo.name
+        
+        
         return cell
+        
     }
-    */
-
-    /*
+    
+   
     // Override to support conditional editing of the table view.
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
         // Return false if you do not want the specified item to be editable.
         return true
     }
-    */
 
-    /*
+
+
     // Override to support editing the table view.
     override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
         if editingStyle == .Delete {
-            // Delete the row from the data source
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+            let elFugitivo = self.losFugados![indexPath.row] as! Fugitive
+            // Eliminar el objeto del arreglo
+            do {
+                //try self.losFugados![indexPath.row].remove()
+                //Eliminar el objeto de la BD
+                DBManager.instance.managedObjectContext!.deleteObject(elFugitivo)
+                try DBManager.instance.managedObjectContext!.save()
+                // Delete the row from the data source
+                //tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+                self.cargarTabla()
+            } catch {
+                print ("No se pudo eliminar el objeto del arreglo")
+            }
         } else if editingStyle == .Insert {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
         }    
     }
-    */
+    
 
     /*
     // Override to support rearranging the table view.
@@ -92,4 +106,18 @@ class FugitivosTableViewController: UITableViewController {
     }
     */
 
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        // Get the new view controller using segue.destinationViewController.
+        //a donde va el seague
+        //Necesitamos algo por lo que hacemos el cast
+        let destino = segue.destinationViewController as! CapturadoViewController
+        
+        // Pass the selected object to the new view controller.
+        let elIndexPath = self.tableView.indexPathForSelectedRow
+        let dictInfo = self.losFugados! [elIndexPath!.row] as! Fugitive
+        destino.fugitiveInfo = dictInfo
+        
+        
+        
+    }
 }

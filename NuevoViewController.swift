@@ -7,9 +7,65 @@
 //
 
 import UIKit
+import CoreData
 
 class NuevoViewController: UIViewController {
 
+    @IBOutlet weak var txtNom: CustomTextField!
+    @IBOutlet weak var txtDelito: CustomTextField!
+    @IBOutlet weak var txtRecompensa: CustomTextField!
+    @IBAction func btnGuardarTouch(sender: AnyObject) {
+        // 1. Validar si los cuadros de texto estan llenos
+        var elMsg = ""
+        if self.txtNom.text == "" {
+            elMsg = "Falta el nombre"
+        } else if self.txtDelito.text == "" {
+            elMsg = "Falta el delito"
+        } else if self.txtRecompensa.text == "" {
+            elMsg = "Falta la recompensa"
+        }
+        // 2. Si falta algun texto, presentar mensaje de error
+        if elMsg != "" {
+            
+            /* colocar para uno menor de 8
+            let ac = UIAlertController(title: "", message: elMsg, preferredStyle: .Alert)
+            let action = UIAlertAction(title: "OK", style: .Default, handler: nil)
+            ac.addAction(action)
+            self.presentViewController(ac, animated: true, completion: nil)
+            */
+            
+            
+            if #available(iOS 8.0, *) {
+                
+                //variable inmutable
+                let alertControl:UIAlertController = UIAlertController(title: "Mensaje", message: elMsg, preferredStyle: .Alert)
+                
+                let alertAct = UIAlertAction(title:"Aceptar", style: .Default, handler: nil)
+                alertControl.addAction(alertAct)
+                self.presentViewController(alertControl, animated: true, completion: nil)
+            }
+            else{
+                UIAlertView(title: "Mensaje", message: elMsg, delegate: nil, cancelButtonTitle: "Aceptar").show()
+            }
+            
+            
+        } else {
+        // 3. Si todo esta correcto, crear una instancia de Fugitive, asignar los datos, y salvar el contexto
+            let entityInfo = NSEntityDescription.entityForName("Fugitive", inManagedObjectContext:DBManager.instance.managedObjectContext!)
+            let nuevoFugitivo = NSManagedObject.init(entity: entityInfo!, insertIntoManagedObjectContext: DBManager.instance.managedObjectContext!) as! Fugitive
+            nuevoFugitivo.name = self.txtNom.text
+            nuevoFugitivo.desc = self.txtDelito.text
+            nuevoFugitivo.bounty = NSDecimalNumber(string: self.txtRecompensa.text)
+            nuevoFugitivo.captured = false
+            do {
+               try DBManager.instance.managedObjectContext!.save()
+               self.navigationController?.popViewControllerAnimated(true)
+            } catch {
+                print ("Error al salvar la BD... what's up?")
+            }
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
