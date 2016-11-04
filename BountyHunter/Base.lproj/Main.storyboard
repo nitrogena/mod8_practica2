@@ -352,6 +352,7 @@
                     </view>
                     <connections>
                         <outlet property="btnFoto" destination="bJL-0F-6tO" id="8n4-cW-3yE"/>
+                        <outlet property="btnGuardar" destination="rW5-nW-ZEr" id="2bP-0y-Dhp"/>
                         <outlet property="imgVwFoto" destination="3kl-xq-kTP" id="qn4-8C-DkO"/>
                         <outlet property="lblDelito" destination="rPY-0u-xTe" id="G8U-DK-j7U"/>
                         <outlet property="lblLatitud" destination="GvP-Nc-cLg" id="bO0-VO-rxO"/>

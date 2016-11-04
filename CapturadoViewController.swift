@@ -12,7 +12,7 @@ import CoreLocation
 
 import Social
 
-class CapturadoViewController: UIViewController, UINavigationControllerDelegate, UIImagePickerControllerDelegate, CLLocationManagerDelegate {
+class CapturadoViewController: UIViewController, UINavigationControllerDelegate, UIImagePickerControllerDelegate, CLLocationManagerDelegate, UIAlertViewDelegate {
 
     
     
@@ -26,6 +26,7 @@ class CapturadoViewController: UIViewController, UINavigationControllerDelegate,
     
     @IBOutlet weak var btnFoto: UIButton!
     
+    @IBOutlet weak var btnGuardar: UIButton!
     var fugitiveInfo: Fugitive?
     
     //declaramos property
@@ -54,8 +55,50 @@ class CapturadoViewController: UIViewController, UINavigationControllerDelegate,
             //si quieren enviar imagen generica
             let image = UIImage(named: "fugitivo")
             
+            let hayFeiz = SLComposeViewController.isAvailableForServiceType(SLServiceTypeFacebook)
+            let hayTuit = SLComposeViewController.isAvailableForServiceType(SLServiceTypeTwitter)
+            //si existen las dos, consultar cual se usa
+            if hayFeiz && hayTuit{
+                
+                
+                if #available(iOS 8.0, *) {
+
+                    let ac = UIAlertController(title: "Compartir", message: "compartir la captura a ", preferredStyle: .Alert)
+               
+                    let btnFeiz = UIAlertAction(title: "Facebook", style: .Default, handler: {
+                        (UIAlertAction) in
+                        let feizbuc = SLComposeViewController(forServiceType: SLServiceTypeFacebook)
+                        feizbuc.setInitialText(texto)
+                        feizbuc.addImage(laFoto!)
+                        self.presentViewController(feizbuc, animated: true, completion: {
+                            self.navigationController?.popViewControllerAnimated(true)
+                        })
+                    })
+                
+                    let btnTuit = UIAlertAction(title: "Twitter", style: .Default, handler: {
+                        (UIAlertAction) in
+                        let tuiter = SLComposeViewController(forServiceType: SLServiceTypeTwitter)
+                        tuiter.setInitialText(texto)
+                        tuiter.addImage(laFoto!)
+                        self.presentViewController(tuiter, animated: true, completion: {
+                            self.navigationController!.popViewControllerAnimated(true)
+                        })
+                    })
+                    let noquiero = UIAlertAction(title: "No gracias", style: .Destructive, handler: nil)
+                    ac.addAction(btnFeiz)
+                    ac.addAction(btnTuit)
+                    ac.addAction(noquiero)
+                    self.presentViewController(ac, animated: true, completion: nil)
+                }
+                else{
+                    UIAlertView(title: "Compartir", message: "compartir la captura a ", delegate: nil, cancelButtonTitle: "Aceptar").show()
+                }
+            }
+            
             
             //VAMOS A USAR EL FRAMEWORK SOCIAL 29-10-16
+                //este codigo se uso arriba
+            /*
             if SLComposeViewController.isAvailableForServiceType(SLServiceTypeFacebook){
                 let feizbuc = SLComposeViewController(forServiceType: SLServiceTypeFacebook)
                 feizbuc.setInitialText(texto)
@@ -72,7 +115,7 @@ class CapturadoViewController: UIViewController, UINavigationControllerDelegate,
                 self.presentViewController(tuiter, animated: true, completion: {
                     self.navigationController!.popViewControllerAnimated(true)
                 })
-            }
+            } */
             else{
             
                 //whatsapp no pueden compartir dos elementos al mismo tiempo
@@ -85,13 +128,22 @@ class CapturadoViewController: UIViewController, UINavigationControllerDelegate,
                 let avc = UIActivityViewController(activityItems: items, applicationActivities: nil)
                 //esto es necesario solo para el correo
                 avc.setValue("¡Fugitivo Capturado!", forKey: "Subject")
-                self.presentViewController(avc, animated: true, completion: {
-                    //para que regrese a la pantalla de la que
-                    self.navigationController?.popViewControllerAnimated(true)
-                })
-            
+                
+                if UIDevice.currentDevice().userInterfaceIdiom == .Phone{
+                    self.presentViewController(avc, animated: true, completion: {
+                        //para que regrese a la pantalla de la que
+                        self.navigationController?.popViewControllerAnimated(true)
+                        
+                        
+                    })
+                
+                }else{
+                    let popover = UIPopoverController(contentViewController: avc)
+                    popover.presentPopoverFromRect(self.btnGuardar.frame, inView: self.view, permittedArrowDirections: .Any, animated: true)
+                }
             }
-            
+        
+        
         }
         catch{
             print("Error al salvar la BD")
@@ -234,7 +286,7 @@ class CapturadoViewController: UIViewController, UINavigationControllerDelegate,
             self.presentViewController(ac, animated: true, completion: nil)
         }
         else{
-            UIAlertView(title: "Mensaje", message: "Todos los campos son requeridos. Por favor, ingréselos.", delegate: nil, cancelButtonTitle: "Aceptar").show()
+            UIAlertView(title: "Mensaje", message: "no se pueden obtener lecturas de gsp", delegate: nil, cancelButtonTitle: "Aceptar").show()
         }
         
     }
@@ -255,6 +307,23 @@ class CapturadoViewController: UIViewController, UINavigationControllerDelegate,
         //6
         //self.colocarMapa(ubicacion!)
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        let av = UIAlertView(title: "Compartir", message: "Compartir esta captura a...", delegate: self, cancelButtonTitle: "Facebook", otherButtonTitles: "Twitter", "No gracias")
+        av.show()
+    }
+    
+    //Esta funcion es por que se usa el delegate arriba
+    func alertView(_ alertView: UIAlertView, didDismissWithButtonIndex buttonIndex: Int) {
+        if buttonIndex == 0 {  // Es el primer boton de izquierda a derecha
+            print ("Compartir a Facebook")
+        }
+        else {
+            print ("Compartir a Twitter")
+        }
+    }
+
 
 
 }
